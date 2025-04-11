@@ -1,0 +1,377 @@
+---
+title: 'STA141 Final Project'
+subtitle: 'STA 141A FQ24'
+author: ''
+date: ''
+output:
+  pdf_document:
+    number_sections: no
+fontsize: 12pt
+---
+```{r, include=FALSE}
+```
+\newpage
+```{r, include=FALSE}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(randomForest)
+library(caret)
+library(glmnet)
+library(xgboost)
+library(ranger)
+
+# Load the dataset
+data <- read.csv("Life Expectancy Data.csv")
+
+# Check for missing values in the dataset
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+
+# Data Cleaning: Remove rows with missing Life.expectancy, Alcohol, GDP, HIV.AIDS
+data_clean <- data %>%
+  filter(!is.na(Life.expectancy), !is.na(Alcohol), !is.na(GDP), !is.na(HIV.AIDS))
+
+```
+
+## Introduction
+Life expectancy is an important indicator 
+The purpose of this project is to analyze the relationship certain factors have with an individual's life expectancy. Life expectancy is defined here as a statistical measure of the average time that an individual will live in a given country. Life expectancy is an important 
+
+
+### Questions of Interest
+
+In our analysis, we focus on two particular questions:
+
+
+## Dataset
+
+The dataset that we used for this project, found on Kaggle, is Life Expectancy Data collected by the World Health Organisation (WHO). The dataset contains information from 193 countries spanning from the years 2000-2015. In addition to life expectancy (our dependent variable in this analysis), the dataset contains the other following variables:
+
+* Year: The year the data was reported
+* Status: Developed or Developing status
+* Adult Mortality: probability of dying between 15 and 60 years per 1000 population
+* infant deaths: Number of Infant Deaths per 1000 population
+* Alcohol: Alcohol recorded per capita (15+) consumption (in litres of pure alcohol)
+* percentage expenditure: Expenditure on health as a percentage of GDP per capita(%)
+* Hepatitis B: HepB immunization coverage among 1-year-olds (%)
+* Measles: number of reported cases of measles per 1000 population
+* BMI: Average Body Mass Index of entire population
+* under-five deaths: Number of under-five deaths per 1000 population
+* Polio: Polio (Pol3) immunization coverage among 1-year-olds (%)
+* Total expenditure: General government expenditure on health as a percentage of total government expenditure (%)
+* Diphtheria: DTP3 immunization coverage among 1-year-olds (%)
+* HIV/AIDS: Deaths per 1000 live births HIV/AIDS (0-4 years)
+* GDP: Gross Domestic Product per capita (in USD)
+* Population: Population of the country
+* thinness 1-19 years: Prevalence of thinness among children and adolescents for Age 10 to 19 (% )
+* thinness 5-9 years: Prevalence of thinness among children for Age 5 to 9(%)
+* Income composition of resources: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
+* Schooling: Number of years of Schooling(years)
+
+
+```{r, include=FALSE}
+```
+
+### Data Cleaning 
+
+An initial exploration of the data revealed that the variables 
+
+
+jdjdj
+
+```{r, echo=FALSE}
+ggplot(data_clean, aes(x = BMI, y = Life.expectancy, color = Status)) +
+  geom_point(alpha = 0.6) +
+  labs(
+    title = "Life Expectancy vs BMI by Status",
+    x = "BMI",
+    y = "Life Expectancy",
+    color = "Status"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    axis.title = element_text(size = 12)
+  ) +
+  scale_color_manual(values = c("Developing" = "blue", "Developed" = "green"))
+
+```
+
+```{r, include=FALSE}
+```
+## g
+After an initial  
+
+
+## h
+
+Before creating our four models to compare, we removed any remaining data points containing NA values in non-predictor columns. Our data was split into training and testing sets (80% train, 20% test). We tested four different regression models: 
+* Linear Regression: 
+* 
+* 
+* 
+
+Each model was compared based on their Root Mean Squared Error (RMSE), with a lower score indicating the model to be better at predicting life expectancy. 
+
+```{r, include=TRUE}
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(randomForest)
+library(caret)
+library(glmnet)
+library(xgboost)
+library(ranger)
+
+# Load the dataset
+data <- read.csv("Life Expectancy Data.csv")
+
+# Check for missing values in the dataset
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+print(missing_values)
+
+# Data Cleaning: Remove rows with missing Life.expectancy, Alcohol, GDP, HIV.AIDS
+data_clean <- data %>%
+  filter(!is.na(Life.expectancy), !is.na(Alcohol), !is.na(GDP), !is.na(HIV.AIDS))
+
+# Relationship between Life Expectancy and BMI
+ggplot(data_clean, aes(x = BMI, y = Life.expectancy, color = Status)) +
+  geom_point(alpha = 0.6) +
+  labs(
+    title = "Life Expectancy vs BMI by Status",
+    x = "BMI",
+    y = "Life Expectancy",
+    color = "Status"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    axis.title = element_text(size = 12)
+  ) +
+  scale_color_manual(values = c("Developing" = "blue", "Developed" = "green"))
+
+
+# Check if there are any missing values left
+missing_values_clean <- sapply(data_clean, function(x) sum(is.na(x)))
+print("Missing values after cleaning:")
+print(missing_values_clean)
+
+# If still any NAs in non-predictor columns, we'll remove them.
+data_clean <- na.omit(data_clean)
+
+# Ensure 'Status' is a factor
+data_clean$Status <- as.factor(data_clean$Status)
+
+# Split the data into train and test sets (80% train, 20% test)
+set.seed(42)
+trainIndex <- createDataPartition(data_clean$Life.expectancy, p = 0.8, list = FALSE)
+train <- data_clean[trainIndex, ]
+test <- data_clean[-trainIndex, ]
+
+# Remove 'Country' column from both training and testing datasets
+train <- train %>% select(-Country)
+test <- test %>% select(-Country)
+
+# --- Convert All Predictors to Numeric ---
+# Convert factor columns to numeric (one-hot encoding or label encoding)
+train[] <- lapply(train, function(x) if(is.factor(x)) as.numeric(as.factor(x)) else x)
+test[] <- lapply(test, function(x) if(is.factor(x)) as.numeric(as.factor(x)) else x)
+
+# --- Model 1: Linear Regression ---
+lm_model <- lm(Life.expectancy ~ ., data = train)
+lm_preds <- predict(lm_model, test)
+lm_rmse <- RMSE(lm_preds, test$Life.expectancy)
+
+# --- Model 2: Random Forest ---
+rf_model <- randomForest(Life.expectancy ~ ., data = train, ntree = 100)
+rf_preds <- predict(rf_model, test)
+rf_rmse <- RMSE(rf_preds, test$Life.expectancy)
+
+# --- Model 3: Ridge Regression (using glmnet) ---
+x_train <- as.matrix(train %>% select(-Life.expectancy))
+y_train <- train$Life.expectancy
+ridge_model <- cv.glmnet(x_train, y_train, alpha = 0)
+ridge_preds <- predict(ridge_model, s = ridge_model$lambda.min, newx = as.matrix(test %>% select(-Life.expectancy)))
+ridge_rmse <- RMSE(ridge_preds, test$Life.expectancy)
+
+# --- Model 4: XGBoost ---
+x_train <- as.matrix(train %>% select(-Life.expectancy))  # Convert to numeric matrix
+y_train <- train$Life.expectancy
+x_test <- as.matrix(test %>% select(-Life.expectancy))    # Convert to numeric matrix
+
+dtrain <- xgb.DMatrix(data = x_train, label = y_train)
+dtest <- xgb.DMatrix(data = x_test)
+
+xgb_model <- xgboost(data = dtrain, nrounds = 100, objective = "reg:squarederror", verbose = 0)
+xgb_preds <- predict(xgb_model, dtest)
+xgb_rmse <- RMSE(xgb_preds, test$Life.expectancy)
+
+# --- Model Comparison Results ---
+results <- data.frame(Model = c("Linear Regression", "Random Forest", "Ridge Regression", "XGBoost"),
+                      RMSE = c(lm_rmse, rf_rmse, ridge_rmse, xgb_rmse))
+
+
+
+
+
+
+
+
+# --- Correlation Analysis ---
+# Correlation between Life Expectancy and key variables
+cor_test_alcohol <- cor.test(data_clean$Alcohol, data_clean$Life.expectancy, use = "complete.obs")
+cor_test_gdp <- cor.test(data_clean$GDP, data_clean$Life.expectancy, use = "complete.obs")
+cor_test_hiv <- cor.test(data_clean$HIV.AIDS, data_clean$Life.expectancy, use = "complete.obs")
+
+# Print correlation results
+print(paste("Correlation between Life Expectancy and Alcohol: ", cor_test_alcohol$estimate))
+print(paste("Correlation between Life Expectancy and GDP: ", cor_test_gdp$estimate))
+print(paste("Correlation between Life Expectancy and HIV/AIDS: ", cor_test_hiv$estimate))
+# 3. Relationship between Life Expectancy and Diseases (e.g., HIV/AIDS)
+ggplot(data, aes(x = HIV.AIDS, y = Life.expectancy)) +
+  geom_point(color = "purple", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Life Expectancy vs HIV/AIDS",
+       x = "HIV/AIDS Prevalence (%)",
+       y = "Life Expectancy (years)") +
+  theme_minimal()
+
+# 2. Relationship between Life Expectancy and GDP
+ggplot(data, aes(x = GDP, y = Life.expectancy)) +
+  geom_point(color = "green", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Life Expectancy vs GDP",
+       x = "GDP (USD per capita)",
+       y = "Life Expectancy (years)") +
+  theme_minimal()
+
+#USING IN-BUILT
+# Visualizing best fit line using In-built 
+ggplot(train, aes(Alcohol, Life.expectancy) ) +
+  geom_point() +
+  stat_smooth(method = lm, formula = y ~ x) +
+  labs(
+    title = "Applying Simple Linear Regression to data by using In-built",
+    subtitle = "Life Expectancy vs Alcohol"
+  )
+
+
+
+
+# Inspect the data structure
+str(data)
+
+# Ensure 'Status' is a factor variable
+data$Status <- as.factor(data$Status)
+
+# Check the number of categories in each factor variable
+cat_levels <- sapply(data, function(x) if (is.factor(x)) length(levels(x)))
+print(cat_levels)
+
+# Identify and handle categorical predictors with too many levels
+# Assuming 'Country' has too many levels, we'll exclude it from the analysis
+data <- select(data, -Country)
+
+# Handle missing values by removing rows with NAs
+data <- na.omit(data)
+
+# Simplify the regression formula to include all numeric variables and relevant factors
+predictors <- paste(names(data)[!names(data) %in% c("Life.expectancy", "Status", "Year")], collapse = " + ")
+formula <- as.formula(paste("Life.expectancy ~", predictors))
+
+# Subset data into Developed and Developing countries
+developed <- filter(data, Status == "Developed")
+developing <- filter(data, Status == "Developing")
+
+# Linear regression model for Developed countries
+model_lm_developed <- lm(formula, data = developed)
+summary_lm_developed <- summary(model_lm_developed)
+print("Linear Regression Summary for Developed Countries:")
+print(summary_lm_developed)
+
+# Linear regression model for Developing countries
+model_lm_developing <- lm(formula, data = developing)
+summary_lm_developing <- summary(model_lm_developing)
+print("Linear Regression Summary for Developing Countries:")
+print(summary_lm_developing)
+
+# Random Forest regression using ranger
+# Developed countries
+rf_developed <- ranger(formula, data = developed, num.trees = 500, mtry = 3, importance = "impurity")
+print("Random Forest Summary for Developed Countries:")
+print(rf_developed)
+
+# Developing countries
+rf_developing <- ranger(formula, data = developing, num.trees = 500, mtry = 3, importance = "impurity")
+print("Random Forest Summary for Developing Countries:")
+print(rf_developing)
+
+# Visualize Variable Importance for Random Forest Models
+importance_developed <- rf_developed$variable.importance
+importance_developing <- rf_developing$variable.importance
+
+# Plotting variable importance
+barplot(sort(importance_developed, decreasing = TRUE), main = "Variable Importance: Developed Countries", las = 2, col = "steelblue")
+barplot(sort(importance_developing, decreasing = TRUE), main = "Variable Importance: Developing Countries", las = 2, col = "darkorange")
+
+# Inspect the data structure
+str(data)
+
+# Handle missing values xby removing rows with NAs
+data <- na.omit(data)
+
+# Ensure 'Status' is a factor variable
+data$Status <- as.factor(data$Status)
+
+# Define the regression formula: Life expectancy predicted by all other variables
+predictors <- paste(names(data)[!names(data) %in% c("Life.expectancy", "Country", "Year")], collapse = " + ")
+formula <- as.formula(paste("Life.expectancy ~", predictors))
+
+# Fit the regression model
+model <- lm(formula, data = data)
+data$predicted <- predict(model, data)
+ggplot(data, aes(x = predicted, y = Life.expectancy)) +
+  geom_point(alpha = 0.6) + 
+  geom_smooth(method = "lm", color = "blue") +
+  labs(title = "Predicted vs Actual Life Expectancy",
+       x = "Predicted Life Expectancy",
+       y = "Actual Life Expectancy") +
+  theme_minimal()
+
+# Alternatively, you can plot residuals to check for patterns:
+
+
+# Summary of the regression model
+summary_model <- summary(model)
+print("Linear Regression Summary:")
+print(summary_model)
+
+# Extract coefficients and p-values
+coefficients <- summary_model$coefficients
+print("Coefficients and p-values:")
+print(coefficients)
+plot(model)
+# Scatterplot with regression line
+ggplot(data_clean, aes(x = Schooling, y = Life.expectancy)) +
+  geom_point(color = "blue", alpha = 0.6) +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Life Expectancy vs Schooling",
+       x = "Schooling (Years)",
+       y = "Life Expectancy (Years)") +
+  theme_minimal()
+
+
+
+
+
+
+
+
+
+
+# --- Save Cleaned Dataset for Future Use ---
+write.csv(data_clean, "cleaned_life_expectancy_data.csv", row.names = FALSE)
+
+
+```
+
